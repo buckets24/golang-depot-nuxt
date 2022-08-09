@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import LoginModule from '@/modules/auth/Login'
+  import LoginModule from '@/modules/auth/login'
 
   export default {
     components: {
