@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.formkit-messages {
+  display: none;
+}
+
+.formkit-messages.list-none {
+  display: block;
+}

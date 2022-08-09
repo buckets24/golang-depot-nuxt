@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "devDependencies": {
+    "@nuxtjs/supabase": "^0.1.19",
+    "autoprefixer": "^10.4.8",
+    "daisyui": "^2.22.0",
+    "nuxt": "3.0.0-rc.6",
+    "postcss": "^8.4.14",
+    "tailwindcss": "^3.1.8"
+  },
+  "dependencies": {
+    "@formkit/nuxt": "^1.0.0-beta.10",
+    "@formkit/themes": "^1.0.0-beta.10",
+    "@loomhq/loom-embed": "^1.5.0",
+    "@loomhq/record-sdk": "^2.35.20",
+    "@supabase/supabase-auth-helpers": "^1.4.2",
+    "@supabase/supabase-js": "^1.35.6",
+    "@supabase/ui": "^0.36.5",
+    "prettier": "^2.7.1"
+  }
+}
