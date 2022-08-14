@@ -24,4 +24,7 @@ export default defineNuxtConfig({
       },
     },
   },
+  publicRuntimeConfig: {
+    SUPABASE_IMAGE_PATH: process.env.SUPABASE_IMAGE_PATH
+  },
 })

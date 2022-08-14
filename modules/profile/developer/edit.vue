@@ -1,29 +1,49 @@
-<script>
+<script setup>
   import Countries from "@/utils/countries"
   import CountriesCode from "@/utils/countriesCode"
-  
-  export default {
-    data () {
-      return {
-        emailAddress: '',
-      }
-    },
-  }
-</script>
-
-<script setup>
   import useProfile from "@/composables/useProfile.ts"
+  const config = useRuntimeConfig()
   const supabase = useSupabaseClient()
-  const { profile } = useProfile()
- 
+  const { profile, userEmail } = useProfile()
+
+  let isSubmitting = ref(false)
+  let profilePhoto = ref("")
+  profilePhoto.value = profile?._rawValue?.profile_photo
+
   const submitHandler = async (value) => {
-    const response = await supabase
+    isSubmitting.value = true
+    let photo
+
+    if (profile?._rawValue?.profile_photo) {
+      const {data} = await supabase
+        .storage
+        .from('photos')
+        .update(`${profile?._rawValue?.id}/`, profilePhoto.value, {
+          cacheControl: '3600',
+          upsert: false
+        })
+        photo = data?.Key
+        profilePhoto.value = data?.Key
+
+    } else {
+      const {data} = await supabase.storage
+        .from("photos")
+        .upload(`${profile?._rawValue?.id}/` + profilePhoto.value?.name, profilePhoto.value)
+      photo = data?.Key
+      profilePhoto.value = data?.Key
+    }
+
+    const { error } = await supabase
       .from('profile')
       .update([{
-        full_name: `${value?.firstName} ${value.lastName}`,
+        first_name: value?.first_name,
+        last_name: value?.last_name,
         email: value?.email,
-        mobile_no: value?.mobile_no,
-        countryCode: value?.countryCode,
+        profile_photo: photo,
+        phone: {
+          mobile: value?.phone,
+          code: value?.countryCode
+        },
         expected_salary: {
           amount: value?.expected_salary,
           currency: "USD"
@@ -35,14 +55,21 @@
         actively_looking: value?.actively_looking,
         summary: value?.summary
       }])
-      .eq('email', profile?.email)
+      .eq('email', userEmail)
 
-    console.log(response, 'response')
+    isSubmitting.value = false
+  }
+
+  const handleUpload = async (event) => {
+    if (event.target.files) {
+      profilePhoto.value = event.target.files[0]
+    }
   }
 </script>
 
 <template>
   <div class='w-full max-w-2xl m-auto flex flex-col justify-center gap-4'>
+    <pre>{{ profile.profile_photo }}</pre>
     <div class="w-full flex flex-row justify-between">
       <div class='flex flex-col items-start gap-1'>
         <h4 class='font-bold text-2xl'>Update your Profile</h4>
@@ -59,6 +86,37 @@
       </div>
     </div>
 
+    <div>
+      
+      <!-- <img
+        :src={config.SUPABASE_IMAGE_PATH}
+        :width="100"
+      /> -->
+      <div class="flex justify-center">
+        <div class="mb-3 w-96">
+          <label for="profilePhoto" class="form-label inline-block mb-2 text-gray-700">Profile Photo</label>
+          <input class="form-control
+            block
+            w-full
+            px-3
+            py-1.5
+            text-base
+            font-normal
+            text-gray-700
+            bg-white bg-clip-padding
+            border border-solid border-gray-300
+            rounded
+            transition
+            ease-in-out
+            m-0
+            focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+            type="file"
+            id="profilePhoto"
+            @change="handleUpload"
+          >
+        </div>
+      </div>
+    </div>
 
     <div class='w-full bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'>
       <FormKit
@@ -66,13 +124,14 @@
         @submit="submitHandler"
         submit-label="Submit"
         v-model="profile"
+        :actions="false"
       >
         <div class="flex flex-row justify-between gap-4">
           <div class="flex-1">
             <FormKit
               type="text"
               label="First Name"
-              name="firstName"
+              name="first_name"
               validation="required"
             />
           </div>
@@ -80,7 +139,7 @@
             <FormKit
               type="text"
               label="Last Name"
-              name="lastName"
+              name="last_name"
               validation="required"
             />
           </div>
@@ -99,7 +158,7 @@
             <FormKit
               type="text"
               label="Mobile Number"
-              name="mobile_no"
+              name="phone"
               validation="required"
             />
           </div>
@@ -119,8 +178,8 @@
               type="email"
               name="email"
               label="Email Address"
-              v-model="emailAddress"
               validation="required|email"
+              disabled
             />
           </div>
         </div>
@@ -181,9 +240,16 @@
             label="Open to Work"
           />
         </div>
-          
-       <!-- <pre wrap>{{ value }}</pre> -->
 
+         <div class="mb-4">
+          <button
+            :disabled="isSubmitting"
+            type="submit"
+            class="bg-blue-500 rounded flex items-center justify-center h-[40px] w-full text-white px-3"
+          >
+            {{ isSubmitting ? "Submitting..." : "Submit" }}
+          </button>
+        </div>
       </FormKit>
     </div>
   </div>

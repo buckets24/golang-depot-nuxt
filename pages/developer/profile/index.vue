@@ -1,28 +1,23 @@
 <script setup>
-  const supabase = useSupabaseClient()
-  const user = supabase.auth.user()
-
-  let profile = ref({})
-
-  const { data } = await supabase
-      .from('profile')
-      .select('*')
-      .eq('email', user?.email)
-
-  profile.value = data?.[0]
-
+  const { SUPABASE_IMAGE_PATH } = useRuntimeConfig()
+  const { profile } = useProfile()
 </script>
 
 <template>
   <div>
     <div class='container mx-auto'>
-
       <div class='container max-w-3xl mx-auto flex flex-col gap-6'>
         <div class='flex items-center justify-between'>
           <div class="flex items-center justify-start gap-4 w-full">
             <div>
-              <div class='h-[150px] w-[150px] rounded-full bg-bg-light flex items-center justify-center'>
-                Avatar
+              <div class='h-[150px] w-[150px] rounded-full bg-bg-light flex items-center justify-center overflow-hidden'>
+                <div v-if="profile?.profile_photo !== undefined">
+                  <img
+                    :src="`${SUPABASE_IMAGE_PATH}/${profile?.profile_photo}`"
+                    width="100"
+                    minHeight="100"
+                  />
+                </div>
               </div>
             </div>
             <div>

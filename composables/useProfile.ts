@@ -3,7 +3,7 @@ export default () => {
   const supabase = useSupabaseClient()
   const user = supabase.auth.user()
 
-  let profile = ref({})
+  let profile = ref({} as any)
 
   const getUser = async (email: string) => {
     const { data } = await supabase
@@ -13,7 +13,11 @@ export default () => {
 
     if (data?.[0]) {
       profile.value = {
-        ... data?.[0],
+        ...data?.[0],
+        first_name: data?.[0]?.first_name,
+        last_name: data?.[0]?.last_name,
+        phone: data?.[0]?.phone?.mobile,
+        countryCode: data?.[0]?.phone?.code,
         expected_salary: data?.[0]?.expected_salary?.amount
       }
     }
@@ -31,5 +35,6 @@ export default () => {
 
   return {
     profile: profile,
+    userEmail: user?.email
   }
 }
